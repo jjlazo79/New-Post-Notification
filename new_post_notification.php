@@ -27,22 +27,20 @@ Text Domain: npn
 
 
 function send_mails_on_publish( $new_status, $old_status, $post ) {
-    if ( 'publish' !== $new_status or 'publish' === $old_status
-        or 'my_custom_type' !== get_post_type( $post ) )
-        return;
-
+  //Only if new post (not update)
+  if ( ( 'publish' == $new_status && 'publish' !== $old_status ) && 'post' == $post->post_type ) {
+    //Get subscriber's emails
     $subscribers = get_users( array ( 'role' => 'subscriber' ) );
     $emails      = array ();
-
-    foreach ( $subscribers as $subscriber )
-        $emails[] = $subscriber->user_email;
-
-    $body = sprintf( 'Tenemos una nueva publicación para ti.
-
+    foreach ( $subscribers as $subscriber ) {
+      $emails[] = $subscriber->user_email;
+      $body = sprintf( 'Tenemos una nueva publicación para ti.
         Mira <%s>',
         get_permalink( $post )
-    );
-
-    wp_mail( $emails, '¡Nueva publicación en ' . bloginfo( 'name' ) . '!', $body );
+      );
+      // Send emails
+      wp_mail( $emails, '¡Nueva publicación en ' . get_bloginfo( 'name' ) . '!', $body );
+   }//foreach
+  } //end if
 }
 add_action( 'transition_post_status', 'send_mails_on_publish', 10, 3 );
